@@ -22,9 +22,8 @@ def median_filter(src, ksize):
 
 def main():
     img = cv2.imread("./images/focus_car04.jpg", 1)
-    gray0 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    gray = cv2.resize(gray0, (256, 256))
-    # gray = gray0
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray = cv2.resize(gray, (256, 256))
     gray = median_filter(gray, ksize=3)
 
     height, width = gray.shape
@@ -35,34 +34,25 @@ def main():
 
     plots = []
 
-    # angleArr = []
     deleteSegments = []
     for i in range(lenH):
         for j in range(lenW):
-            # if i==7 and j==4: continue
-
-            i0 = i*d
-            j0 = j*d
-            segImg = gray[i0:i0+d, j0:j0+d]
+            idh = i*d
+            jdw = j*d
+            segImg = gray[idh:idh+d, jdw:jdw+d]
             
             # 高速フーリエ変換(2次元)
             f = np.fft.fft2(segImg)
-
             # 零周波数成分を配列の左上から中心に移動
             fshift =  np.fft.fftshift(f)
-
             mgni = 20*np.log(np.abs(fshift))
-            # mgni = np.log(np.abs(fshift))
-
-            # print(i,j,mgni)
+            print(i, j)
 
             plots = []
-            # for f in range(16):
             for f in range(int(d/2)-5, int(d/2)):
                 x0 = y0 = int(d/2)-1-f
                 x1 = y1 = int(d/2)+f
 
-                
                 powers = np.hstack( (
                     mgni[y0, x0+1:x1], 
                     mgni[y1, x0+1:x1], 
@@ -88,35 +78,29 @@ def main():
             if angle<-500 or section<8000:            
                 deleteSegments.append([i, j])
 
-                plt.subplot(lenH, lenW, j+i*lenW+1)
+            # plt.subplot(lenH, lenW, jdw+idh*lenW+1) # for segments
 
-                # plt.plot(plotsX, lsm, label='d=1')
-                
-                # if i==7 and j==4:
-                # plt.subplot(111)
+            # plt.plot(plotsX, lsm, label='d=1') # for lsm
+            # plt.plot(plots)
 
-                # plt.imshow(segImg, cmap = 'gray')
-                # plt.imshow(mgni, cmap = 'gray')
-                # plt.imshow(f, cmap = 'gray')
+            # plt.imshow(segImg, cmap = 'gray')
+            # plt.imshow(mgni, cmap = 'gray')
+            # plt.imshow(f, cmap = 'gray')
 
-                # plt.plot(plots)
+            # plt.title("%s %s" % (j, i))
+            # plt.xticks([])
+            # plt.yticks([])
+            
 
-                # plt.title("%s %s" % (j, i))
-                # plt.xticks([])
-                # plt.yticks([])
-
-    # print(angleArr)
     for sgm in deleteSegments:
         i, j = sgm
         height, width, channel = img.shape
         dh = int(d*height/256)
         dw = int(d*width/256)
-        # dh = dw = 32
-        i0 = i*dh
-        j0 = j*dw
-        # img[ [i0:i0+dh, j0:j0+dw ] = 0
-        for p in range(i0, i0+dh):
-            for q in range(j0, j0+dw):
+        idh = i*dh
+        jdw = j*dw
+        for p in range(idh, idh+dh):
+            for q in range(jdw, jdw+dw):
                 img[p][q] = 0
 
     plt.subplot(111)
