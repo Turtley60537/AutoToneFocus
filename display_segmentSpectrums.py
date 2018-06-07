@@ -33,6 +33,7 @@ def main():
             # 零周波数成分を配列の左上から中心に移動
             fshift =  np.fft.fftshift(f)
             mgnSpct = 20*np.log(np.abs(fshift))
+            # mgnSpct = np.log(np.abs(fshift))
 
             plt.subplot(lenH, lenW, j+i*lenW+1)
             plt.imshow(mgnSpct, cmap = 'gray')
