@@ -6,7 +6,7 @@ import cv2
 from matplotlib import pyplot as plt
 
 # flag : 0...camera capture mode / 1...image mode
-flag = 1
+flag = 0
 
 def chromaKey(front, back, lc, uc):
     lower_color = np.array(lc)
@@ -49,12 +49,12 @@ def sub_color(src, K):
 def main():
  
     if flag==0:
-        # capture = cv2.VideoCapture('./images/video01_480p.mov')
-        capture = cv2.VideoCapture(0)
+        capture = cv2.VideoCapture('./images/video02_720p.mov')
+        # capture = cv2.VideoCapture(0)
 
-        # capture.set(3, 320)
-        # capture.set(4, 240)
-        # capture.set(5, 1)
+        capture.set(3, 320)
+        capture.set(4, 240)
+        capture.set(5, 30)
 
         while True:
             _, img = capture.read()
@@ -68,7 +68,8 @@ def main():
         process([])
 
 def process(img):
-    if flag==1: img = cv2.imread("./images/focus_flower.jpg")
+    if flag==1: img = cv2.imread("./images/focus_car01.jpg")
+    
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = cv2.Laplacian(gray, cv2.CV_32F)
     gray = cv2.convertScaleAbs(gray)
@@ -86,9 +87,7 @@ def process(img):
             dh = h*d
             dw = w*d
             segImg = gray[dh:dh+d, dw:dw+d]
-            # print(segImg)
             ave = np.mean(segImg)
-            # flat = 100
             flat = 0
             if ave<9:
                 flat = 0
@@ -98,14 +97,11 @@ def process(img):
                 graySeg.append([h,w])
             elif ave<256:
                 flat = 255
-            # print(h, w)
 
             cv2.rectangle(gray, (dw,dh), (dw+d,dh+d), flat, thickness=-1)
-            
-            # print(gray)
-    
+                
     blackImg = img.copy()
-    blackImg = sub_color(blackImg, K=4)
+    blackImg = sub_color(blackImg, K=8)
 
     grayImg = img.copy()
     grayImg = sub_color(grayImg, K=16)
