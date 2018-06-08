@@ -45,14 +45,33 @@ def sub_color(src, K):
     return res.reshape((src.shape))
 
 def main():
-    img = cv2.imread("./images/focus_flower.jpg", 1)
+    process([])
+    
+    # capture = cv2.VideoCapture('./images/video01_480p.mov')
+
+    # # capture.set(3, 320)
+    # # capture.set(4, 240)
+    # # capture.set(5, 1)
+
+    # while True:
+    #     _, img = capture.read()
+    #     process(img)
+    #     if cv2.waitKey(25) > 0:
+    #         break
+
+    # capture.release()
+    # cv2.destroyAllWindows()
+
+def process(img):
+
+    img = cv2.imread("./images/focus_car01.jpg", 1)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = cv2.resize(gray, (256, 256))
     gray = cv2.medianBlur(gray, ksize=3)
 
     height, width = gray.shape
 
-    d = 32
+    d = 16
     lenH = int(height/d)
     lenW = int(width/d)
 
@@ -70,7 +89,9 @@ def main():
             f = np.fft.fft2(segImg)
             # 零周波数成分を配列の左上から中心に移動
             fshift =  np.fft.fftshift(f)
-            mgni = 20*np.log(np.abs(fshift))
+            mgni = 20*np.log(np.abs(fshift)+1)
+            # mgni = np.power( mgni, 2 )
+
 
             # print(i, j)
 
@@ -91,22 +112,28 @@ def main():
                     mgni[y1, x1]
                     ) )
                 powers = list(filter(lambda x: x!=np.inf and x!=-np.inf, powers))
+                if len(powers)==0: continue
+
                 powers = list(map(lambda x: x*x, powers))
                 sumPower = sum(powers)
                 rootResult = sumPower/len(powers)
                 plots.append(rootResult)
 
+            if len(plots)==0: continue
+
             plotsX = list(map(lambda x:x, range(len(plots))))
             angle, section = np.polyfit(plotsX, plots, 1)
             # angleArr.append(angle)
+            print(angle, section)
             
             lsm = np.poly1d(np.polyfit(plotsX, plots, 1))(plotsX)
 
-            # print(angle, section)
-            if not(angle<-500 or section<8000):            
+            # if not(angle<-500 or section<8000):   
+            # if not(angle>-1000 or section<7000):   
+            if angle<-600 and section>7900:
                 deleteSegments.append([i, j])
 
-            # plt.subplot(lenH, lenW, jdw+idh*lenW+1) # for segments
+            # plt.subplot(lenH, lenW, j+i*lenW+1) # for segments
 
             # plt.plot(plotsX, lsm, label='d=1') # for lsm
             # plt.plot(plots)
@@ -116,8 +143,8 @@ def main():
             # plt.imshow(f, cmap = 'gray')
 
             # plt.title("%s %s" % (j, i))
-            # plt.xticks([])
-            # plt.yticks([])
+            plt.xticks([])
+            plt.yticks([])
             
     subImg = img.copy()
     subImg = sub_color(subImg, K=4)
@@ -135,8 +162,12 @@ def main():
     chromaImg = chromaKey(img, subImg)
     chromaImg = cv2.cvtColor(chromaImg, cv2.COLOR_BGR2RGB)
 
+    # 実行画像の描画
     plt.subplot()
     plt.imshow(chromaImg)
+
+    # chromaImg
+    # cv2.imshow('chromaImg', chromaImg)
     
     plt.show()
 
