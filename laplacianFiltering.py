@@ -6,7 +6,7 @@ import cv2
 from matplotlib import pyplot as plt
 
 # flag : 0...camera capture mode / 1...image mode
-flag = 0
+flag = 1
 
 def chromaKey(front, back, lc, uc):
     lower_color = np.array(lc)
@@ -68,7 +68,7 @@ def main():
         process([])
 
 def process(img):
-    if flag==1: img = cv2.imread("./images/focus_car01.jpg")
+    if flag==1: img = cv2.imread("./images/focus_sb.jpg")
     
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = cv2.Laplacian(gray, cv2.CV_32F)
@@ -89,10 +89,10 @@ def process(img):
             segImg = gray[dh:dh+d, dw:dw+d]
             ave = np.mean(segImg)
             flat = 0
-            if ave<9:
+            if ave<4:
                 flat = 0
                 blackSeg.append([h,w])
-            elif ave<46:
+            elif ave<40:
                 flat = 50
                 graySeg.append([h,w])
             elif ave<256:
@@ -101,10 +101,10 @@ def process(img):
             cv2.rectangle(gray, (dw,dh), (dw+d,dh+d), flat, thickness=-1)
                 
     blackImg = img.copy()
-    blackImg = sub_color(blackImg, K=8)
+    blackImg = sub_color(blackImg, K=6)
 
     grayImg = img.copy()
-    grayImg = sub_color(grayImg, K=16)
+    grayImg = sub_color(grayImg, K=10)
 
     for sgm in blackSeg:
         h, w = sgm
@@ -124,6 +124,7 @@ def process(img):
     chromaImg2 = chromaKey(grayImg, chromaImg, lc=[230/2, 100, 100], uc=[250/2, 255, 255])
    
     cv2.imshow('Dot Focus', chromaImg2)
+    cv2.imwrite("pet5.jpg", chromaImg2)
 
     if flag==1:
         cv2.waitKey(0)
