@@ -52,12 +52,12 @@ def sub_color(src, K):
 def main():
  
     if flag==0:
-        capture = cv2.VideoCapture('./images/video02.mov')
+        capture = cv2.VideoCapture('./images/matsubokkuri_480p.mov')
         # capture = cv2.VideoCapture(0)
 
         # capture.set(3, 320)
         # capture.set(4, 240)
-        # capture.set(5, 30)
+        capture.set(5, 20)
 
 
         while True:
@@ -66,13 +66,6 @@ def main():
 
             if cv2.waitKey(25) > 0:
                 break
-        # images[0].save(
-        #     'images/exportGif.gif',
-        #     save_all=True, 
-        #     append_images=images[1:], 
-        #     optimize=False, 
-        #     duration=40, 
-        #     loop=0)
         capture.release()
         cv2.destroyAllWindows()
     
@@ -101,16 +94,15 @@ def process(img):
             segImg = gray[dh:dh+d, dw:dw+d]
             ave = np.mean(segImg)
             flat = 0
-            if ave<9:
+            if ave<3:
                 flat = 0
                 blackSeg.append([h,w])
-            elif ave<46:
+            elif ave<5:
                 flat = 50
                 graySeg.append([h,w])
             elif ave<256:
                 flat = 255
 
-            cv2.rectangle(gray, (dw,dh), (dw+d,dh+d), flat, thickness=-1)
                 
     blackImg = img.copy()
     blackImg = sub_color(blackImg, K=8)
@@ -120,24 +112,20 @@ def process(img):
 
     for sgm in blackSeg:
         h, w = sgm
-        height, width, channel = blackImg.shape
         dh = h*d
         dw = w*d
         cv2.rectangle(img, (dw,dh), (dw+d,dh+d), (0,255,0), thickness=-1)
 
     for sgm in graySeg:
         h, w = sgm
-        height, width, channel = grayImg.shape
         dh = h*d
         dw = w*d
         cv2.rectangle(img, (dw,dh), (dw+d,dh+d), (255,0,0), thickness=-1)
 
     chromaImg = chromaKey(blackImg, img, lc=[100/2, 100, 100], uc=[130/2, 255, 255])
     chromaImg2 = chromaKey(grayImg, chromaImg, lc=[230/2, 100, 100], uc=[250/2, 255, 255])
-   
-    # print(len(images))
-    # images.append(chromaImg2)
-    cv2.imshow('Dot Focus', chromaImg2)
+
+    # cv2.imshow('Dot Focus', chromaImg2)
 
     global cnt
     if cnt<10:
@@ -149,7 +137,7 @@ def process(img):
     cnt+=1
 
     
-    cv2.imwrite("img%s.jpg"%(num), chromaImg2)
+    cv2.imwrite("output07/img%s.jpg"%(num), chromaImg2)
 
     if flag==1:
         cv2.waitKey(0)

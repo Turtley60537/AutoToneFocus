@@ -68,12 +68,15 @@ def main():
         process([])
 
 def process(img):
-    if flag==1: img = cv2.imread("./images/focus_sb.jpg")
+    if flag==1: img = cv2.imread("./images/matsu03.png")
     
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = cv2.Laplacian(gray, cv2.CV_32F)
     gray = cv2.convertScaleAbs(gray)
     # _, gray = cv2.threshold(gray, 30, 50, cv2.THRESH_BINARY)
+
+    plt.subplot(231)
+    plt.imshow(gray, cmap='gray')
 
     height, width = gray.shape
     d = 8
@@ -89,40 +92,50 @@ def process(img):
             segImg = gray[dh:dh+d, dw:dw+d]
             ave = np.mean(segImg)
             flat = 0
-            if ave<4:
+            if ave<3:
                 flat = 0
                 blackSeg.append([h,w])
-            elif ave<40:
+            elif ave<5:
                 flat = 50
                 graySeg.append([h,w])
             elif ave<256:
                 flat = 255
 
-            cv2.rectangle(gray, (dw,dh), (dw+d,dh+d), flat, thickness=-1)
+            # cv2.rectangle(gray, (dw,dh), (dw+d,dh+d), flat, thickness=-1)
                 
     blackImg = img.copy()
-    blackImg = sub_color(blackImg, K=6)
+    blackImg = sub_color(blackImg, K=8)
 
     grayImg = img.copy()
     grayImg = sub_color(grayImg, K=10)
 
     for sgm in blackSeg:
         h, w = sgm
-        height, width, channel = blackImg.shape
         dh = h*d
         dw = w*d
         cv2.rectangle(img, (dw,dh), (dw+d,dh+d), (0,255,0), thickness=-1)
 
     for sgm in graySeg:
         h, w = sgm
-        height, width, channel = grayImg.shape
         dh = h*d
         dw = w*d
         cv2.rectangle(img, (dw,dh), (dw+d,dh+d), (255,0,0), thickness=-1)
+    
+    plt.subplot(232)
+    plt.imshow(img)
+    plt.subplot(233)
+    plt.imshow(blackImg)
+    plt.subplot(234)
+    plt.imshow(grayImg)
+
 
     chromaImg = chromaKey(blackImg, img, lc=[100/2, 100, 100], uc=[130/2, 255, 255])
     chromaImg2 = chromaKey(grayImg, chromaImg, lc=[230/2, 100, 100], uc=[250/2, 255, 255])
    
+    plt.subplot(235)
+    plt.imshow(chromaImg2)
+    plt.show()
+
     cv2.imshow('Dot Focus', chromaImg2)
     cv2.imwrite("pet5.jpg", chromaImg2)
 
